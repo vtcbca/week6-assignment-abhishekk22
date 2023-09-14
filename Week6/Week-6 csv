@@ -13,8 +13,8 @@ def add_student_record(student_id, student_name, marks):
     result_table.append(student_record)
 
 # Adding records for two students as an example
-add_student_record(1, 'Alice', [90, 85, 78, 92, 88])
-add_student_record(2, 'Bob', [76, 89, 91, 83, 95])
+add_student_record(1, 'Abhi', [90, 85, 78, 92, 88])
+add_student_record(2, 'Bhavin', [76, 89, 91, 83, 95])
 
 # Printing the result table
 for student in result_table:
