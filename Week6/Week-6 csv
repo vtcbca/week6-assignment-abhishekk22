@@ -1,3 +1,5 @@
+1. Create a result table which contain student id, student name and 5 subject marks. 
+
 # Create a list to store student records
 result_table = []
 
