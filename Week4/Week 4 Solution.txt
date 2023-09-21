@@ -1,0 +1,145 @@
+import sqlite3
+from datetime import datetime
+
+# Function to create the database and tables
+def create_tables():
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    # Create the 'contact' table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS contact (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fname TEXT,
+            lname TEXT,
+            contact TEXT,
+            email TEXT,
+            city TEXT
+        )
+    ''')
+
+    # Create the 'logtable' for logging operations
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS logtable (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            operation TEXT,
+            fname TEXT,
+            lname TEXT,
+            contact TEXT,
+            datetime TEXT
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+# Trigger function to validate input
+def validate_input(trigger_type, fname, lname, contact, email, city):
+    if trigger_type == "INSERT" or trigger_type == "UPDATE":
+        if not (fname and lname and contact):
+            return "All fields (fname, lname, and contact) must be provided."
+    return None
+
+# Function to insert a contact
+def insert_contact(fname, lname, contact, email, city):
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    # Validate input using the trigger
+    validation_result = validate_input("INSERT", fname, lname, contact, email, city)
+    if validation_result:
+        raise Exception(validation_result)
+
+    cursor.execute('''
+        INSERT INTO contact (fname, lname, contact, email, city)
+        VALUES ("Abhi","Chaudhari",8899654712,"22bca22@gmail.com","Vyara")
+    ''', (fname, lname, contact, email, city))
+
+    # Log the operation
+    log_operation("INSERT", fname, lname, contact)
+
+    conn.commit()
+    conn.close()
+
+# Function to update a contact
+def update_contact(contact_id, fname, lname, new_contact, email, city):
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    # Validate input using the trigger
+    validation_result = validate_input("UPDATE", fname, lname, new_contact, email, city)
+    if validation_result:
+        raise Exception(validation_result)
+
+    # Get the old contact details for logging
+    cursor.execute('SELECT fname, lname, contact FROM contact WHERE id=?', (contact_id,))
+    old_details = cursor.fetchone()
+
+    cursor.execute('''
+        UPDATE contact
+        SET fname=?, lname=?, contact=?, email=?, city=?
+        WHERE id=?
+    ''', (fname, lname, new_contact, email, city, contact_id))
+
+    # Log the operation with old and new details
+    log_operation("UPDATE", f"{old_details[0]} {old_details[1]}", old_details[2], f"{fname} {lname}", new_contact)
+
+    conn.commit()
+    conn.close()
+
+# Function to delete a contact
+def delete_contact(contact_id):
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    # Get the contact details for logging
+    cursor.execute('SELECT fname, lname, contact FROM contact WHERE id=?', (contact_id,))
+    details = cursor.fetchone()
+
+    cursor.execute('DELETE FROM contact WHERE id=?', (contact_id,))
+
+    # Log the operation
+    log_operation("DELETE", details[0], details[1], details[2])
+
+    conn.commit()
+    conn.close()
+
+# Function to search for contacts
+def search_contact(search_term):
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT * FROM contact
+        WHERE fname LIKE ? OR lname LIKE ? OR contact LIKE ? OR email LIKE ? OR city LIKE ?
+    ''', (f"%{search_term}%", f"%{search_term}%", f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"))
+
+    results = cursor.fetchall()
+
+    conn.close()
+    return results
+
+# Function to log operations
+def log_operation(operation, fname, lname, contact):
+    conn = sqlite3.connect("contact_management.db")
+    cursor = conn.cursor()
+
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cursor.execute('''
+        INSERT INTO logtable (operation, fname, lname, contact, datetime)
+        VALUES ("emp, "Patel", "Neel", 9988765412, 12/10/2022)
+    ''', (operation, fname, lname, contact, current_datetime))
+
+    conn.commit()
+    conn.close()
+
+# Create tables if they don't exist
+create_tables()
+
+# Example usage:
+insert_contact("Jay", "Dev", "9954567890", "jay@example.com", "Bardoli")
+update_contact(1, "Jigar", "Raj", "9988657451", "raj@example.com", "Surat")
+delete_contact(2)
+search_result = search_contact("Jay")
+print(search_result)
