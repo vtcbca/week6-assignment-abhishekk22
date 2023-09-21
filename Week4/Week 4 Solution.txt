@@ -1,145 +1,165 @@
-import sqlite3
-from datetime import datetime
+def Connect():
+    con=sq.connect("c:\\sqlite3\\contactmgmt.db")
+    cur=con.cursor()
+    con.commit()
+    return con
 
-# Function to create the database and tables
-def create_tables():
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
+# table create
 
-    # Create the 'contact' table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS contact (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fname TEXT,
-            lname TEXT,
-            contact TEXT,
-            email TEXT,
-            city TEXT
-        )
-    ''')
+def createTable(con):
+    cur=con.cursor()
+    cur.execute("CREATE TABLE CONTACT(fname text, laname text, contact numeric, email text, city text);")
+    con.commit()
 
-    # Create the 'logtable' for logging operations
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS logtable (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            operation TEXT,
-            fname TEXT,
-            lname TEXT,
-            contact TEXT,
-            datetime TEXT
-        )
-    ''')
+# log table create 
 
-    conn.commit()
-    conn.close()
+def createLog(con):
+    cur=con.cursor()
+    cur.execute("""CREATE TABLE IF NOT EXISTS CONTACT_log
+        (
+        fname text,
+        lname text,
+        contact integer,
+        datetime text,
+        operation_performed text
+        );""")             
+    con.commit()
 
-# Trigger function to validate input
-def validate_input(trigger_type, fname, lname, contact, email, city):
-    if trigger_type == "INSERT" or trigger_type == "UPDATE":
-        if not (fname and lname and contact):
-            return "All fields (fname, lname, and contact) must be provided."
-    return None
+# creating trigger for log table 
 
-# Function to insert a contact
-def insert_contact(fname, lname, contact, email, city):
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
+def logTrigger(con):
+    cur=con.cursor()
+    cur.execute("""CREATE TRIGGER IF NOT EXISTS insertLogTrigger
+                        after insert
+                        on contact
+                        BEGIN
+                            INSERT INTO CONTACT_log
+                            VALUES(new.fname,new.laname,new.contact,datetime('now','localtime'),'INSERT');
+                        END;""")
+    cur.execute("""CREATE TRIGGER IF NOT EXISTS deleteLogTrigger
+                        after delete 
+                        on contact
+                        BEGIN
+                            INSERT INTO CONTACT_log
+                            VALUES(old.fname,old.laname,old.contact,datetime('now','localtime'),'DELETE');
+                        END;""")
+    cur.execute("""CREATE TRIGGER IF NOT EXISTS updateLogTrigger
+                        after update
+                        on contact
+                        BEGIN
+                            INSERT INTO CONTACT_log
+                            VALUES(new.fname,new.laname,new.contact,datetime('now','localtime'),'After UPDATE');
+                            INSERT INTO CONTACT_log
+                            VALUES(old.fname,old.laname,old.contact,datetime('now','localtime'),'Before UPDATE');
+                        END;""")
+    con.commit()
 
-    # Validate input using the trigger
-    validation_result = validate_input("INSERT", fname, lname, contact, email, city)
-    if validation_result:
-        raise Exception(validation_result)
+# validate record 
 
-    cursor.execute('''
-        INSERT INTO contact (fname, lname, contact, email, city)
-        VALUES ("Abhi","Chaudhari",8899654712,"22bca22@gmail.com","Vyara")
-    ''', (fname, lname, contact, email, city))
+def createTrigger(con):
+    cur=con.cursor()
+    con.execute("""CREATE TRIGGER validate_field 
+    BEFORE INSERT
+    ON CONTACT
+    BEGIN
+    SELECT
+    CASE
+    WHEN new.email NOT LIKE '%_@_%_.%' THEN
+        RAISE(ABORT,'Please enter email in correct format')
+    WHEN length(new.contact)<10 THEN
+        RAISE(ABORT,'please enter valid contact no.')\
+    END;
+    END;""")           
+    con.commit()
 
-    # Log the operation
-    log_operation("INSERT", fname, lname, contact)
+# insert record 
 
-    conn.commit()
-    conn.close()
+def insertRecords(con):
+    cur=con.cursor()
+    fname=input("\n\nEnter first name: ")
+    lname=input("Enter last name: ")
+    contact=int(input("Enter contact: "))
+    email=input("Enter email:")
+    city=input("Enter city: ")
+    L=[fname,lname,contact,email,city]
+    conn.execute("INSERT INTO CONTACT VALUES(?,?,?,?,?);",L)
+    print('\n\nContact inserted sucessfully.\n')
+    con.commit()
 
-# Function to update a contact
-def update_contact(contact_id, fname, lname, new_contact, email, city):
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
+# updating record 
 
-    # Validate input using the trigger
-    validation_result = validate_input("UPDATE", fname, lname, new_contact, email, city)
-    if validation_result:
-        raise Exception(validation_result)
+def updateContacts(con):
+    cur=con.cursor()
+    name_search=input("\n\nEnter their First name: ")
+    new_contact=input("Enter New Contact No :")
+    cur.execute(f"update CONTACT set contact='{new_contact}' where fname='{name_search}'")
+    print("\n\nContact updated successfully.\n")
+    con.commit()
 
-    # Get the old contact details for logging
-    cursor.execute('SELECT fname, lname, contact FROM contact WHERE id=?', (contact_id,))
-    old_details = cursor.fetchone()
+#deleting record 
 
-    cursor.execute('''
-        UPDATE contact
-        SET fname=?, lname=?, contact=?, email=?, city=?
-        WHERE id=?
-    ''', (fname, lname, new_contact, email, city, contact_id))
+def deleteContacts(con):
+    cur=con.cursor()
+    name_search=input("\n\nEnter their First Name: ")
+    cur.execute(f"delete from CONTACT where fname='{name_search}'")
+    print("\n\nContact deleted successfully.\n")
+    con.commit()
 
-    # Log the operation with old and new details
-    log_operation("UPDATE", f"{old_details[0]} {old_details[1]}", old_details[2], f"{fname} {lname}", new_contact)
+# searching record
 
-    conn.commit()
-    conn.close()
+def searchContacts(con):
+    cur=con.cursor()
+    name_search=input("\n\nEnter their First Name: ")
+    cur.execute(f"select * from CONTACT where fname='{name_search}'")
+    records=cur.fetchall()
+    print('\n____________________________________________________________________________________')
+    print('Fname\tLaname\tContact\t\tEmail\t\t\tCity')
+    print('______________________________________________________________________________________')
+    for rows in records:
+        print('{}\t{}\t{}\t{}\t{}'.format(rows[0],rows[1],rows[2],rows[3],rows[4]))     
+    print('\n\nThis are all available records\n')
+    con.commit()
 
-# Function to delete a contact
-def delete_contact(contact_id):
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
+# def viewRecords(con):
+    cur=con.cursor()
+    cur.execute('select * from CONTACT')
+    records=cur.fetchall()
+    print('\n____________________________________________________________________________________')
+    print('Fname\tLaname\tContact\t\tEmail\t\t\tCity')
+    print('______________________________________________________________________________________')
+    for rows in records:
+        print('{}\t{}\t{}\t{}\t{}'.format(rows[0],rows[1],rows[2],rows[3],rows[4]))       
+    print('\n\nThis are all available records')
+    con.commit()
 
-    # Get the contact details for logging
-    cursor.execute('SELECT fname, lname, contact FROM contact WHERE id=?', (contact_id,))
-    details = cursor.fetchone()
+# operation function 
 
-    cursor.execute('DELETE FROM contact WHERE id=?', (contact_id,))
-
-    # Log the operation
-    log_operation("DELETE", details[0], details[1], details[2])
-
-    conn.commit()
-    conn.close()
-
-# Function to search for contacts
-def search_contact(search_term):
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        SELECT * FROM contact
-        WHERE fname LIKE ? OR lname LIKE ? OR contact LIKE ? OR email LIKE ? OR city LIKE ?
-    ''', (f"%{search_term}%", f"%{search_term}%", f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"))
-
-    results = cursor.fetchall()
-
-    conn.close()
-    return results
-
-# Function to log operations
-def log_operation(operation, fname, lname, contact):
-    conn = sqlite3.connect("contact_management.db")
-    cursor = conn.cursor()
-
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    cursor.execute('''
-        INSERT INTO logtable (operation, fname, lname, contact, datetime)
-        VALUES ("emp, "Patel", "Neel", 9988765412, 12/10/2022)
-    ''', (operation, fname, lname, contact, current_datetime))
-
-    conn.commit()
-    conn.close()
-
-# Create tables if they don't exist
-create_tables()
-
-# Example usage:
-insert_contact("Jay", "Dev", "9954567890", "jay@example.com", "Bardoli")
-update_contact(1, "Jigar", "Raj", "9988657451", "raj@example.com", "Surat")
-delete_contact(2)
-search_result = search_contact("Jay")
-print(search_result)
+def operationFunct():
+    con=createConnect()
+    tablecreate(con)
+    createLog(con)
+    createTrigger(con)
+    logTrigger(con)
+    choice=1
+    while choice!=0:
+        print('\n-------------------------------------------------------------------------------------------------')
+        print('1- Insert contacts')
+        print('2- Update contacts')
+        print('3- Delete contacts')
+        print('4- Search contacts')
+        print('5- View all records')
+        print('0- Exit the program')
+        choice=int(input('\nEnter your choice: '))     
+        if choice==1:
+            insertRecords(con)      
+        elif choice==2:
+            updateContacts(con)     
+        elif choice==3:
+            deleteContacts(con)     
+        elif choice==4:
+            searchContacts(con)     
+        elif choice==5:
+            viewRecords(con)       
+    con.close()
+import sqlite3 as sq     
+operationFunct() 
