@@ -1,0 +1,97 @@
+#write a python script to enter any number to check it is prime or not
+#22bca22  19-06-2023
+
+num =int(input('enter number: '))
+# If given number is greater than 1
+if num > 1:
+	for i in range(2, int(num/2)+1):
+		if (num % i) == 0:
+			print(num, "is not a prime number")
+			break
+	else:
+		print(num, "is a prime number")
+else:
+	print(num, "is not a prime number")
+
+#Write a python script to enter any number and print the sum of its digit.
+#22bca22 19-06-2023
+
+a=int(input('Enter value of A :'))
+b=int(input('Enter value of B :'))
+c=a+b
+print(c)
+
+#Write a python script to enter any number, if it is integer number, then check its palindrom or not. Print appropriate message if it is not palindrom.
+#22BCA22
+
+n=int(input("Enter number:"))
+t=n
+r=0
+while(n>0):
+    d=n%10
+    r=r*10+d
+    n=n//10
+if(t==r):
+    print("the number is a palindrome")
+else:
+    print("the number isn't a palindrome")
+
+#Write a python script to enter any number, if it is integer number, then check its armstrong or not. Print appropriate message if it is not palindrom.
+#22BCA22
+
+num = int(input("Enter a number: "))
+sum = 0
+temp = num
+while temp > 0:
+   digit = temp % 10
+   sum += digit ** 3
+   temp //= 10
+if num == sum:
+   print(num,"is an Armstrong number")
+else:
+   print(num,"is not an Armstrong number")
+
+#Write a python script to enter any string and count vowel.
+#22BCA22
+
+string=input("Enter string:")
+vowels=0
+for i in string:
+      if(i=='a' or i=='e' or i=='i' or i=='o' or i=='u' or i=='A' or i=='E' or i=='I' or i=='O' or i=='U'):
+            vowels=vowels+1
+print("Number of vowels are:")
+print(vowels)
+
+#Write a python script to enter any string and print only part of string. Take input of start character and end character from user.
+#22bca22
+
+str = input("Enter a string: ")
+first = input("Enter the first character: ")
+last = input("Enter the last character: ")
+
+start = str.find(first)
+end = str.find(last)
+
+if start != -1 and end != -1:
+    remain = str[start:end]
+    print("remaining portion of the string:", remain)
+else:
+    print("Start or end character not found in the string.")
+
+
+#Write a python script to enter any string, replace vowel with its position number.
+#22bca22
+
+string = input("Enter a string: ")
+new = ''
+vowels = 'aeiouAEIOU'
+position = 1
+
+for char in string:
+    if char in vowels:
+        new += str(position)
+    else:
+        new += char
+    position += 1
+print("new string number : ", new)
+
