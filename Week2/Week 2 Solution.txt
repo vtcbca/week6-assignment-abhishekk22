@@ -1,0 +1,37 @@
+1. create table stud*/
+ 
+create table stud
+ (
+ id int primary key,
+ name text
+ );
+
+2. create table student_detail*/
+
+create table stud_detail
+(
+sid int,
+city text,
+mobile_no int,
+foreign key (sid) references stud(id)
+);
+
+*************** insert queries of student ********************
+
+ insert into stud values(1,'Abhi'),(2,'jay'),(3,'ajay'),(4,'Raj'),(5,'Hiren'),(6,'Sahil'),(7,'Mehul'),(8,'haresh'),(9,'amit'),(10,'Parth');
+
+************** insert record of stud_detail **********************
+
+ insert into stud_detail values(1,'surat',9879435713),(2,'surat',8320839502),(3,'bardoli',1234567890),(4,'bardoli',9874561230),(5,'vyara',6320563212),(6,'baruch',7896452315),(7,'vyara',9909888561),(8,'surat',9320934560),(9,'bardoli',7946235698),(10,'surat',9656142389);
+
+*********************************QUERIES************************************
+1. display student whose come from surat.
+---> select s.id ,s.name from stud s join stud_detail sd on s.id=sd.sid where city='surat';
+
+2. display student detail whose city name start with 'b'.
+---> select s.id ,s.name from stud s join stud_detail sd on s.id=sd.sid where city like 'b%';
+
+3. update mobile no who are coming from surat.
+---> update stud_detail
+     set mobile_no=9879435713
+     where city='surat';
