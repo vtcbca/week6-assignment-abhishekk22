@@ -1,0 +1,88 @@
+1. Create a result table which contain student id, student name and 5 subject marks. 
+
+# Create a list to store student records
+result_table = []
+
+# Function to add a student record
+def add_student_record(student_id, student_name, marks):
+    student_record = {
+        'Student ID': student_id,
+        'Student Name': student_name,
+        'Subject Marks': marks
+    }
+    result_table.append(student_record)
+
+# Adding records for two students as an example
+add_student_record(1, 'Abhi', [90, 85, 78, 92, 88])
+add_student_record(2, 'Bhavin', [76, 89, 91, 83, 95])
+
+# Printing the result table
+for student in result_table:
+    print(f"Student ID: {student['Student ID']}")
+    print(f"Student Name: {student['Student Name']}")
+    print(f"Subject Marks: {', '.join(map(str, student['Subject Marks']))}")
+    print()
+
+# 2. Enter 10 student details with their marks
+
+for i in range(1, 11):
+    student_id = i
+    student_name = input(f"Enter student {i}'s name: ")
+    marks = []
+    for j in range(1, 6):
+        subject_mark = float(input(f"Enter marks for subject {j}: "))
+        marks.append(subject_mark)
+    result_table.append([student_id, student_name] + marks)
+
+# 3. Dump the table into a CSV file "result.csv"
+
+with open("result.csv","w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerows(result_table)
+
+# 4. Read "result.csv" file and print Total Marks and Grade of each student
+
+with open("result.csv","r") as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip the header row
+    for row in reader:
+        student_id, student_name, *marks = row
+        marks = list(map(float, marks))
+        total_marks = sum(marks)
+        grade = None
+
+        if total_marks >= 450:
+            grade = "A+"
+        elif total_marks >= 400:
+            grade = "A"
+        elif total_marks >= 350:
+            grade = "B"
+        elif total_marks >= 300:
+            grade = "C"
+        else:
+            grade = "F"
+
+        print(f"Student ID: {student_id}, Student Name: {student_name}")
+        print(f"Total Marks: {total_marks}, Grade: {grade}")
+
+# 5. List out the top 3 students with their percentage
+
+with open("result.csv","r") as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip the header row
+    student_data = []
+
+    for row in reader:
+        student_id, student_name, *marks = row
+        marks = list(map(float, marks))
+        total_marks = sum(marks)
+        percentage = (total_marks / 500) * 100
+        student_data.append((student_id, student_name, percentage))
+
+    # Sort the students by percentage in descending order
+    student_data.sort(key=lambda x: x[2], reverse=True)
+
+    # Print the top 3 students
+    print("\nTop 3 Students:")
+    for i, (student_id, student_name, percentage) in enumerate(student_data[:3], 1):
+        print(f"{i}. Student ID: {student_id}, Student Name: {student_name}, Percentage: {percentage:.2f}%")

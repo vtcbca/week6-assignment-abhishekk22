@@ -1,0 +1,106 @@
+#1. Create table
+import sqlite3 as sq
+con=sq.connect("c:\\sqlite\\EMS.db")
+q="create table employee(e_id int primary key,e_name text,dept text,basic int ,branch text)"
+cur=con.cursor()
+cur.execute(q)
+
+#2. Insert 5 Records directly, 5 records using tuple and 5 records using taking input from user
+
+#insert record directy
+
+q1="insert into employee values(1,'jay','Account',5000,'surat'),(2,'suresh','IT',6000,'vyara'),(3,'rahul','HR',7000,'bardoli'),(4,'hiren','IT',8000,'surat'),(5,'dinesh','Inventory',3000,'bardoli')"
+cur=con.cursor()
+cur.execute(q)
+
+# insert record using tuple
+
+q="insert into employee values(?,?,?,?,?)"
+v=[(6,'rakesh','inventory',7000,'surat'),(7,'avinash','Account',5000,'bardoli'),(8,'arvind','HR',4000,'vyara'),(9,'vatsal','IT',9000,'baruch'),(10,'eren','Account',6000,'surat')]
+cur=con.cursor()
+cur.executemany(q,v)
+
+#insert record using user input
+q="insert into employee values(?,?,?,?,?)"
+l=[]
+for i in range(5):
+    eid=int(input("Enter employee id:"))
+    ename=input("Enter name:")
+    dept=input("Enter departnment:")
+    basic=int(input("Enter basic salary:"))
+    branch=input("Enter branch:")
+    t=(eid,ename,dept,basic,branch)
+    l.append(t)
+cur=con.cursor()
+cur.executemany(q,l)
+
+#3. Update records who are from "Surat" branch with increment in salary 10%.
+
+q="update employee set basic=basic+(basic*10/100) where branch='surat'"
+cur=con.cursor()
+cur.execute(q)
+
+#4. Print All records.
+
+q="select * from employee"
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()	
+for i in v:
+    print(i)
+
+#5. Print records where dept is "HR" and "IT".
+
+q="select * from employee where dept='HR' or dept='IT'"	
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)	
+
+#6. Print records in sorting order of department.
+
+q="select * from employee order by dept"
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)
+	
+#7. Print records where basic is >6000.
+
+q="select * from employee where basic >6000"	
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)
+
+#8. Print records whrere employee name second character is "r".
+
+q="select * from employee where ename like '_r%'"
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)
+
+#9. Grouping record of employee who are from "Account" and "Inventory".
+
+q="select * from employee  where dept in('Account','Inventory')group by dept"
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)
+
+#10. Print all records based on branch name in descending order.
+
+q="select * from employee order by branch desc"
+cur=con.cursor()
+cur.execute(q)
+v=cur.fetchall()
+for i in v:
+    print(i)
+con.commit()
+con.close()
